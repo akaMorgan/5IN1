@@ -11,10 +11,15 @@
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar"><a class="brand" href="#" onclick="showPage('home')" style="color: #00f0ff;"><span class="brand-puzzle" style="color: #00f0ff;">✣</span><span>5 IN <b style="color: #00f0ff;">1</b></span></a>
-        <a class="active" href="#home">HOME</a>
-        <a href="#challenges">CHALLENGES</a>
-        <a href="#leaderboard">LEADERBOARD</a>
+    <header class="topbar"><header class="topbar">
+  <a class="brand" href="#" onclick="showPage('home')" style="color: #00f0ff;"><span class="brand-puzzle" style="color: #00f0ff;">✣</span><span>5 IN <b style="color: #00f0ff;">1</b></span></a>
+  <nav>
+    <a class="active" href="#home" onclick="showPage('home')">HOME</a>
+    <a href="#challenges" onclick="showPage('challenges')">CHALLENGES</a>
+    <a href="#leaderboard" onclick="showPage('leaderboard')">LEADERBOARD</a>
+  </nav>
+  <button class="avatar" aria-label="Profile">👤</button>
+</header>
       </nav>
       <button class="avatar" aria-label="Profile">👤</button>
     </header>
