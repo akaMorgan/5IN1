@@ -1,84 +1,15 @@
-const state={current:0,unlocked:0,answers:[],timer:null};
-const challenges=[
-  {name:"GUESS",desc:"Visual Guessing",icon:"🧩"},
-  {name:"SPEED",desc:"Timed Challenge",icon:"⚡"},
-  {name:"MEMORY",desc:"Memory Challenge",icon:"◈"},
-  {name:"LOGIC",desc:"Logic Puzzle",icon:"⌁"},
-  {name:"FINAL",desc:"Final Mystery Challenge",icon:"✦"}
+const tracks=[
+ {tag:'HR — Would you hire me?',q:'في مقابلة عمل، ما أفضل طريقة لعرض إنجازك؟',a:['ذكر مسؤولياتك فقط','ذكر موقف محدد ونتيجة قابلة للقياس','التحدث عن الدرجات فقط','إرسال السيرة الذاتية دون شرح'],correct:1},
+ {tag:'PR — Let’s talk business',q:'ما أول خطوة لبناء شراكة ناجحة؟',a:['طلب التمويل فورًا','فهم احتياجات الطرف الآخر وقيمته المشتركة','إرسال رسالة عامة للجميع','التركيز على اسم الشركة فقط'],correct:1},
+ {tag:'OR — Make it happen',q:'عند تأخر مهمة أساسية، ما التصرف الأنسب؟',a:['تجاهلها حتى الموعد','تحديد السبب والبدائل وإبلاغ الفريق مبكرًا','البدء في مهمة مختلفة','لوم عضو واحد في الفريق'],correct:1},
+ {tag:'SM — Make it go viral',q:'ما العنصر الذي يجعل المحتوى أكثر قابلية للمشاركة؟',a:['نشره في وقت عشوائي','رسالة واضحة وقيمة حقيقية للجمهور','استخدام أكبر عدد من الهاشتاجات','كتابة نص طويل جدًا'],correct:1},
+ {tag:'TR — Think like L&D',q:'كيف تعرف أن تجربة التعلّم نجحت؟',a:['أن تكون الشرائح جميلة','أن يستطيع المتعلم تطبيق المهارة في موقف حقيقي','أن تكون مدة الجلسة طويلة','أن يحفظ المتعلم المصطلحات'],correct:1}
 ];
-const games=[
-  {type:"guess",question:"Can you guess what this is?",visual:"◉",options:["Camera","Headphones","Watch","Glasses"],correct:0},
-  {type:"speed",question:"What is 15 × 4 ?",correctText:"60"},
-  {type:"memory",question:"Look at the objects carefully. You have 3 seconds.",items:["★","♧","📷","🎧","🌱","☕"]},
-  {type:"logic",question:"Solve the puzzle",sequence:"2  →  4  →  8  →  16  →  ?",correctText:"32"},
-  {type:"final",question:"Decode the final piece using what you discovered.",items:["★","⚡","🎧","☕","🌱"],correctText:"15243"}
-];
-
-function showPage(id){
- document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
- if(id==="challenges")renderMap();
- if(id==="leaderboard")renderLeaderboard();
- window.scrollTo({top:0,behavior:"smooth"});
-}
-function renderPieces(){
- const box=document.getElementById("miniPieces"); box.innerHTML="";
- for(let i=0;i<5;i++){const el=document.createElement("i");if(i<state.unlocked)el.innerHTML="✣",el.style.color="#ffc21a";box.appendChild(el)}
- document.getElementById("piecesCount").textContent=state.unlocked;
-}
-function renderMap(){
- const list=document.getElementById("challengeList"); list.innerHTML="";
- challenges.forEach((c,i)=>{
-  const el=document.createElement("div");
-  el.className="challenge-card "+(i===state.unlocked?"active":"");
-  const locked=i>state.unlocked;
-  el.innerHTML=`<div class="challenge-icon">${c.icon}</div><div><h3>${String(i+1).padStart(2,"0")} &nbsp; ${c.name}</h3><p>${c.desc}</p></div>${locked?'<span class="lock-small">🔒</span>':'<span class="challenge-num">›</span>'}`;
-  if(!locked)el.onclick=()=>startGame(i);
-  list.appendChild(el);
- });
-}
-function startGame(i){
- state.current=i;
- const g=games[i];
- document.getElementById("challengeTitle").textContent=`CHALLENGE ${String(i+1).padStart(2,"0")}`;
- document.getElementById("counter").textContent=`${i+1} / 5`;
- document.getElementById("progressBar").style.width=`${(i+1)*20}%`;
- const root=document.getElementById("gameContent");
- let content=`<div class="game-card"><div class="question">${g.question}</div>`;
- if(g.type==="guess"){
-  content+=`<div class="visual">${g.visual}</div><div class="options">${g.options.map((x,n)=>`<button class="option" onclick="selectOption(this,${n},${g.correct})">${x}</button>`).join("")}</div>`;
- }else if(g.type==="speed"){
-  content+=`<div class="timer" id="timer">07</div><div class="input-row"><input id="answer" class="answer-input" placeholder="Enter your answer" inputmode="numeric"><button class="primary" onclick="submitText()">SUBMIT</button></div>`;
- }else if(g.type==="memory"){
-  content+=`<div class="memory-grid">${g.items.map(x=>`<div class="memory-card">${x}</div>`).join("")}</div><div class="options"><button class="option" onclick="memoryAnswer()">I'M READY</button></div>`;
- }else if(g.type==="logic"){
-  content+=`<div class="visual" style="font-size:25px;letter-spacing:2px">${g.sequence}</div><div class="input-row"><input id="answer" class="answer-input" placeholder="Enter your answer" inputmode="numeric"><button class="primary" onclick="submitText()">SUBMIT</button></div>`;
- }else{
-  content+=`<div class="memory-grid">${g.items.map(x=>`<div class="memory-card">${x}</div>`).join("")}</div><div class="input-row"><input id="answer" class="answer-input" placeholder="Enter the code"><button class="primary" onclick="submitText()">DECODE</button></div>`;
- }
- content+=`<div class="game-actions"><button class="secondary" onclick="showPage('challenges')">BACK TO MAP</button></div></div>`;
- root.innerHTML=content; showPage("game");
- if(g.type==="speed")startTimer(7);
- if(g.type==="memory")setTimeout(()=>document.querySelectorAll(".memory-card").forEach(x=>x.style.filter="blur(8px)"),3000);
-}
-function selectOption(btn,n,correct){
- document.querySelectorAll(".option").forEach(x=>x.classList.remove("selected"));btn.classList.add("selected");
- setTimeout(()=>n===correct?success():failure(),350);
-}
-function submitText(){
- const val=(document.getElementById("answer")?.value||"").trim().toLowerCase();
- const g=games[state.current];
- if(val===String(g.correctText).toLowerCase())success();else failure();
-}
-function memoryAnswer(){success()}
-function success(){
- clearInterval(state.timer);state.unlocked=Math.max(state.unlocked,state.current+1);renderPieces();
- if(state.current===4){showPage("complete")}else{startGame(state.current+1)}
-}
-function failure(){const el=document.getElementById("gameContent");el.animate([{transform:"translateX(-5px)"},{transform:"translateX(5px)"},{transform:"translateX(0)"}],180)}
-function startTimer(sec){
- let t=sec;const el=document.getElementById("timer");
- state.timer=setInterval(()=>{t--;if(el)el.textContent=String(t).padStart(2,"0");if(t<=0){clearInterval(state.timer);failure()}},1000);
-}
-function renderLeaderboard(){}
-renderPieces();
+let current=0,score=0,answered=false;const key='fiveInOneScore';
+function showPage(id){document.querySelectorAll('.page').forEach(e=>e.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+id));if(id==='game')renderGame();if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
+function updateScore(){document.getElementById('liveScore').textContent=score;document.getElementById('homeScore').textContent=score}
+function renderGame(){updateScore();if(current>=tracks.length){localStorage.setItem(key,String(score));showPage('leaderboard');return}const t=tracks[current];document.getElementById('progressFill').style.width=`${current*20}%`;document.getElementById('gameContent').innerHTML=`<div class="question-card"><span class="tag">${t.tag}</span><h3>${t.q}</h3><div class="answers">${t.a.map((x,i)=>`<button onclick="answer(${i})">${x}</button>`).join('')}</div><p class="feedback" id="feedback"></p></div>`;answered=false}
+function answer(i){if(answered)return;answered=true;const ok=i===tracks[current].correct,fb=document.getElementById('feedback');if(ok){score+=100;updateScore();fb.textContent='إجابة صحيحة! +100 نقطة';setTimeout(()=>{current++;renderGame()},700)}else{fb.textContent='ليست الإجابة الأنسب — حاول مرة ثانية.';answered=false}}
+function restartGame(){current=0;score=0;updateScore();showPage('game')}
+function renderLeaderboard(){const saved=Number(localStorage.getItem(key)||0),rows=[{name:'Mariam A.',score:500},{name:'Omar S.',score:400},{name:'Nour M.',score:400},{name:'أنت',score:saved,me:true},{name:'Ahmed K.',score:300}].sort((a,b)=>b.score-a.score);document.getElementById('winnerName').textContent=rows[0].name;document.getElementById('winnerScore').textContent=`${rows[0].score} نقطة`;document.getElementById('leaderRows').innerHTML=rows.map((r,i)=>`<tr class="${r.me?'you':''}"><td>${i===0?'🥇':i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.me?'نتيجتك':'متنافس'}</td></tr>`).join('')}
+updateScore();
